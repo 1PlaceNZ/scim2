@@ -1,0 +1,36 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  S3_PATH: "s3://$S3_BUCKET/gitlab/$(date +%d-%m-%Y)"
+
+cache:
+  paths:
+    - .m2/repository
+
+build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-11
+  script:
+    - mvn clean install
+  artifacts:
+    paths:
+      - scim2-sdk-client/target/scim2-sdk-client-3.0.1-1place.jar
+      - scim2-sdk-common/target/scim2-sdk-common-3.0.1-1place.jar
+    expire_in: 1 hour
+  only:
+    - develop
+
+deploy_to_s3:
+  stage: deploy
+  image: amazon/aws-cli
+  dependencies:
+    - build
+  script:
+    - aws s3 cp scim2-sdk-client/target/scim2-sdk-client-3.0.1-1place.jar $S3_PATH/scim2-sdk-client-3.0.1-1place.jar
+    - aws s3 cp scim2-sdk-common/target/scim2-sdk-common-3.0.1-1place.jar $S3_PATH/scim2-sdk-common-3.0.1-1place.jar
+    - echo "Uploaded JARs to $S3_PATH"
+  only:
+    - develop
