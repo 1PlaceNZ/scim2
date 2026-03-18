@@ -4,8 +4,7 @@ stages:
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
-  S3_PATH: "s3://$S3_BUCKET/gitlab/$(date +%d-%m-%Y)"
-
+  
 cache:
   paths:
     - .m2/repository
@@ -25,10 +24,13 @@ build:
 
 deploy_to_s3:
   stage: deploy
-  image: amazon/aws-cli
+  image:
+    name: amazon/aws-cli
+    entrypoint: [""]
   dependencies:
     - build
   script:
+    - export S3_PATH="s3://$S3_BUCKET/gitlab/$(date +%d-%m-%Y)"
     - aws s3 cp scim2-sdk-client/target/scim2-sdk-client-3.0.1-1place.jar $S3_PATH/scim2-sdk-client-3.0.1-1place.jar
     - aws s3 cp scim2-sdk-common/target/scim2-sdk-common-3.0.1-1place.jar $S3_PATH/scim2-sdk-common-3.0.1-1place.jar
     - echo "Uploaded JARs to $S3_PATH"
