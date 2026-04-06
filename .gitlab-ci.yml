@@ -2,6 +2,9 @@ stages:
   - build
   - deploy
 
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
@@ -34,10 +37,10 @@ deploy_to_registry:
       curl --fail-with-body \
         --header "JOB-TOKEN: $CI_JOB_TOKEN" \
         --upload-file scim2-sdk-client/target/scim2-sdk-client-${PACKAGE_VERSION}.jar \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/scim2-sdk-client-${PACKAGE_VERSION}.jar?overwrite=true"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/scim2-sdk-client-${PACKAGE_VERSION}.jar"
     - |
       curl --fail-with-body \
         --header "JOB-TOKEN: $CI_JOB_TOKEN" \
         --upload-file scim2-sdk-common/target/scim2-sdk-common-${PACKAGE_VERSION}.jar \
-        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/scim2-sdk-common-${PACKAGE_VERSION}.jar?overwrite=true"
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/scim2-sdk-common-${PACKAGE_VERSION}.jar"
     - echo "Uploaded JARs to GitLab Package Registry under ${PACKAGE_NAME}/${PACKAGE_VERSION}"
