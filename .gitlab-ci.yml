@@ -2,10 +2,15 @@ stages:
   - build
   - deploy
 
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"'
+
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
-  S3_PATH: "s3://$S3_BUCKET/gitlab/$(date +%d-%m-%Y)"
-
+  PACKAGE_NAME: "scim2-sdk"
+  PACKAGE_VERSION: "3.0.1-1place"
+  
 cache:
   paths:
     - .m2/repository
@@ -20,17 +25,22 @@ build:
       - scim2-sdk-client/target/scim2-sdk-client-3.0.1-1place.jar
       - scim2-sdk-common/target/scim2-sdk-common-3.0.1-1place.jar
     expire_in: 1 hour
-  only:
-    - develop
 
-deploy_to_s3:
+deploy_to_registry:
   stage: deploy
-  image: amazon/aws-cli
+  image:
+    name: curlimages/curl:latest
   dependencies:
     - build
   script:
-    - aws s3 cp scim2-sdk-client/target/scim2-sdk-client-3.0.1-1place.jar $S3_PATH/scim2-sdk-client-3.0.1-1place.jar
-    - aws s3 cp scim2-sdk-common/target/scim2-sdk-common-3.0.1-1place.jar $S3_PATH/scim2-sdk-common-3.0.1-1place.jar
-    - echo "Uploaded JARs to $S3_PATH"
-  only:
-    - develop
+    - |
+      curl --fail-with-body \
+        --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+        --upload-file scim2-sdk-client/target/scim2-sdk-client-${PACKAGE_VERSION}.jar \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/scim2-sdk-client-${PACKAGE_VERSION}.jar"
+    - |
+      curl --fail-with-body \
+        --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+        --upload-file scim2-sdk-common/target/scim2-sdk-common-${PACKAGE_VERSION}.jar \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${PACKAGE_NAME}/${PACKAGE_VERSION}/scim2-sdk-common-${PACKAGE_VERSION}.jar"
+    - echo "Uploaded JARs to GitLab Package Registry under ${PACKAGE_NAME}/${PACKAGE_VERSION}"
