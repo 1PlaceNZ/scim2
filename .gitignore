@@ -7,3 +7,19 @@ target/
 
 # Ignore MacOS metadata.
 .DS_Store
+scim2-ubid-extensions/.settings
+scim2-sdk-common/.settings
+scim2-sdk-server/.settings
+scim2-assembly/.settings
+scim2-sdk-client/.settings
+.settings
+scim2-assembly/.project
+scim2-sdk-client/.classpath
+scim2-sdk-client/.project
+scim2-sdk-common/.classpath
+scim2-sdk-common/.project
+scim2-sdk-server/.classpath
+scim2-sdk-server/.project
+scim2-ubid-extensions/.classpath
+scim2-ubid-extensions/.project
+.project
